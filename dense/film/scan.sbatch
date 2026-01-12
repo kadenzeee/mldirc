@@ -21,13 +21,12 @@ S_MIN=0.2
 S_MAX=2.0
 N_POINTS=21
 
-S=$(python3 - <<EOF
-import numpy as np
-i = ${SLURM_ARRAY_TASK_ID}
-s = np.logspace(np.log10(${S_MIN}), np.log10(${S_MAX}), ${N_POINTS})[i]
-print(f"{s:.4f}")
-EOF
-)
+S=$(awk -v i="$i" -v n="$N_POINTS" -v smin="$S_MIN" -v smax="$S_MAX" \
+    'BEGIN {
+        ratio = smax / smin
+        s = smin * exp( (i / (n - 1)) * log(ratio) )
+        printf "%.4f", s
+    }')
 
 echo "[INFO] Running with s = $S"
 
