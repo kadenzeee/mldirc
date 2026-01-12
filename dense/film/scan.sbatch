@@ -8,6 +8,8 @@
 #SBATCH --mem=32G
 #SBATCH --time=24:00:00
 #SBATCH --array=0-20
+#SBATCH --mail-type=END,FAIL
+#SBATCH --mail-user=d.markhoff@gsi.de
 
 # ---- paths ----
 SIF=/lustre/nyx/panda/markhoff/containers/tf-rocm/tensorflow_rocm6.4.1-py3.12-tf2.18-dev.sif
