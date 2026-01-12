@@ -263,7 +263,7 @@ subprocess.run('mkdir models', shell=True)
 date_str = datetime.date.today().isoformat()
 i = 1
 while True:
-    out_name = f"models/{date_str}_model{i}.keras"
+    out_name = f"models/{date_str}_model{i}_s{s}.keras"
     if not os.path.exists(out_name):
         break
     i += 1
