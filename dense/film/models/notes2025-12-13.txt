@@ -1,6 +1,6 @@
 # ------------------------------------
 #
-#                Model 1
+#                Model 3
 #
 # ------------------------------------
 
@@ -11,9 +11,31 @@
 
 # ------------------------------------
 #
-#                Model 2
+#                Model 5
 #
 # ------------------------------------
 
 • 22 to 90 dataset
 • definitely still shit
+• when evaluated on unseen data, produces same result to on trained data. this indicates good
+generalisation during training?
+
+
+# ------------------------------------
+#
+#                Model 6
+#
+# ------------------------------------
+
+• broken 22 to 90 dataset 
+• 80% accuracy
+• circular distribution
+
+
+# ------------------------------------
+#
+#                Model 8
+#
+# ------------------------------------
+
+• Fixed bottlenecking

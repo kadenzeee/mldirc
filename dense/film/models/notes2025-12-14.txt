@@ -1,0 +1,33 @@
+# ------------------------------------
+#
+#                Model 1
+#
+# ------------------------------------
+
+• Large 22 to 140 dataset
+• need to do analysis; a dataset is cooking for this
+
+# ------------------------------------
+#
+#                Model 2
+#
+# ------------------------------------
+
+• Large 22 to 90 dataset, using 50% of data
+• has a strange sharp cutoff at 60 degrees theta
+• potentially due to training fraction?
+• confused as to why cutoff is so sharp
+• film channel parameters look usual
+• photon count vs sep power looks usual
+
+# ------------------------------------
+#
+#                Model 3
+#
+# ------------------------------------
+
+• same as model 2 but on the full dataset
+• maintains sharp cutoff at around 60 degrees theta 
+• film channel parameters look usual 
+• photon count vs sep power looks usual
+

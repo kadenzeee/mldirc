@@ -18,7 +18,7 @@ except FileNotFoundError():
 
 os.makedirs("tmp", exist_ok=True)
 
-infile = "../../../Data/Raw/iahits2.root"
+infile = "../../../Data/Raw/iahits.root"
 if(len(sys.argv) > 1):
     infile = sys.argv[1] 
 
@@ -116,7 +116,6 @@ for fname in all_angle_files:
     chunk = np.load(fname, mmap_mode='r')
     L = len(chunk)
     ANGLES_MM[offset:offset+L] = chunk
-    print(ANGLES_MM[offset:offset+L])
     for i in ANGLES_MM[offset:offset+L]:
         if i[4] == 0 and i[5] == 0 and i[6] == 0:
             print('[WARN] Zero angle detected. Investigate?')

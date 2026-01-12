@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 
-
 import tensorflow as tf
-from tensorflow import keras
+import keras
 import time
 import datetime
 import numpy as np
@@ -20,12 +19,13 @@ print(f"[INFO] Environment set")
 
 program_start = time.time()
 
-infile = "iahits2.npz"
+infile = "2M22TO90timing.npz"
 
 f = np.load(infile, mmap_mode='r')
 TIMES, ANGLES, LABELS = f["TIMES"], f["ANGLES"], f["LABELS"]
 nevents = TIMES.shape[0]
-input_dim = TIMES.shape[1]
+time_dim = TIMES.shape[1]
+angle_dim = ANGLES.shape[1]
 
 print(f"[INFO] Data size: {sys.getsizeof(TIMES)//10**6} MB")
 
@@ -39,8 +39,8 @@ class_names = ['Pi+', 'Proton']
 num_classes = len(class_names) # Pions or kaons?
 
 
-batch_size  = 256 # How many events to feed to NN at a time?
-nepochs     = 20 # How many epochs?
+batch_size  = 128 # How many events to feed to NN at a time?
+nepochs     = 10 # How many epochs?
 
 trainfrac   = 0.7
 valfrac     = 0.15
@@ -66,7 +66,6 @@ vallabels   = LABELS[trainend:valend]
 testtimes   = TIMES[valend:testend]
 testangles  = ANGLES[valend:testend]
 testlabels  = LABELS[valend:testend]
-
 
 
 
@@ -139,13 +138,16 @@ class BatchGenerator(keras.utils.Sequence):
             np.random.shuffle(self.indices)
 
 
-num_nodes = 96
 dropout = 0.15
 
 # Time Data Branch
-hist_input = keras.Input(shape=(input_dim,))
-h = keras.layers.Dense(num_nodes, activation='gelu')(hist_input)
-h = keras.layers.Dropout(dropout)(h)
+hist_input = keras.Input(shape=(time_dim,))
+
+h = keras.layers.LayerNormalization()(hist_input)
+h = keras.layers.Dense(time_dim//2, activation='gelu')(h)
+h = keras.layers.Dense(time_dim//2, activation='gelu')(h)
+
+#h = keras.layers.Dropout(dropout)(h)
 
 
 # Angle Data Branch
@@ -178,23 +180,27 @@ class ScaleAngles(keras.layers.Layer):
         cfg.update({'initial_scale': self.initial_scale, 'dtype': self._dtype})
         return cfg
 
-angle_input = keras.Input(shape=(7,))
+angle_input = keras.Input(shape=(angle_dim,))
 scaled_input = ScaleAngles(initial_scale=1.0, dtype='bfloat16')(angle_input)
 
-a = keras.layers.Dense(num_nodes, activation='gelu')(scaled_input)
+a = keras.layers.LayerNormalization()(scaled_input)
+a = keras.layers.Dense(time_dim//2, activation='gelu')(a)
+a = keras.layers.Dense(time_dim//2, activation='gelu')(a)
 
 # Produce FiLM parameters
-gamma = keras.layers.Dense(num_nodes, activation='linear', name='gamma')(a)
-beta  = keras.layers.Dense(num_nodes, activation='linear', name='beta')(a)
-#gamma = keras.layers.Lambda(lambda g: 1.0 + 10*g)(gamma)
-#beta  = keras.layers.Lambda(lambda b: 10*b)(beta)
+gamma = keras.layers.Dense(time_dim//2, kernel_regularizer=keras.regularizers.L2(1e-04), name='gamma')(a)
+# push gamma towards 1 so that network is encouraged to use FiLM layer, not just ignore it
+#gamma = keras.layers.Lambda(lambda g: tf.exp(0.1*g))(gamma_raw)
+beta  = keras.layers.Dense(time_dim//2, activation='linear', name='beta')(a)
 
 # FiLM layer
 h_mod = keras.layers.Multiply()([h, gamma])
 h_mod = keras.layers.Add()([h_mod, beta])
 
 # Combined layers and output
-x = keras.layers.Dense(16, activation='gelu')(h_mod)
+drop = keras.layers.Dropout(dropout, name='dropout')(h_mod)
+x = keras.layers.Dense(time_dim//4, activation='gelu')(drop)
+x = keras.layers.Dense(time_dim//6, activation='gelu')(x)
 out = keras.layers.Dense(num_classes, activation='softmax', name='output')(x)
 
 model = keras.Model(inputs=[hist_input, angle_input], outputs=out)

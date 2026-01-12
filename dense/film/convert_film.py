@@ -40,7 +40,9 @@ while t.next() and t.i() < entries:
     times = [photon.getLeadTime() + ROOT.gRandom.Gaus(0, 0.2) for photon in t.event().getHits()]
     chs   = [int(photon.getChannel()) for photon in t.event().getHits()]
     theta = (t.event().getTof() + ROOT.gRandom.Gaus(0, 3E-03)) 
-    phi   = (t.event().getTofP() + ROOT.gRandom.Gaus(0, 3E-03))
+    phi   = (t.event().getTofPhi() + ROOT.gRandom.Gaus(0, 3E-03))
+    
+    print(t.event().getTofP())
 
     mu    = np.mean(times)
     std   = np.std(times)
@@ -78,3 +80,4 @@ np.savez_compressed(outfile, TIMES=TIMES, ANGLES=ANGLES, LABELS=LABELS)
 
 program_end = time.time()
 print(f"Done in {program_end-program_start} seconds")
+
