@@ -10,7 +10,7 @@
 #SBATCH --array=0-20
 
 # ---- paths ----
-SIF=/lustre/nyx/panda/markhoff/containers/tf-rocm.sif
+SIF=/lustre/nyx/panda/markhoff/containers/tf-rocm/tensorflow_rocm6.4.1-py3.12-tf2.18-dev.sif
 WORKDIR=/lustre/panda/markhoff/dirc/mldirc/dense/film
 LOGDIR=$WORKDIR/logs
 
