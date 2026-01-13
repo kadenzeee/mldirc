@@ -18,7 +18,7 @@ except FileNotFoundError():
 
 os.makedirs("tmp", exist_ok=True)
 
-infile = "../../../Data/Raw/2M22TO90.root"
+infile = "2M22TO90.root"
 if(len(sys.argv) > 1):
     infile = sys.argv[1] 
 
@@ -60,8 +60,6 @@ while t.next() and t.i() < entries:
     ANGLES[i] = [mu, std, t0, t1, np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi), np.cos(theta)]
     LABELS[i] = t.pid()/2 - 1
     
-    print(TIMES[i])
-    
     if ANGLES[i][4] == 0 and ANGLES[i][5] == 0 and ANGLES[i][6] == 0:
         print('[WARN] Zero angle detected. Investigate?')
     
@@ -99,7 +97,7 @@ all_angle_files = sorted([f"tmp/{f}" for f in os.listdir("tmp") if f.startswith(
 all_label_files = sorted([f"tmp/{f}" for f in os.listdir("tmp") if f.startswith("labels_")])
 
 # Flattened memmaps
-TIMES_MM = np.memmap("TIMES_full.npy", dtype=np.int64,  mode='w+', shape=((entries, nchan)))
+TIMES_MM = np.memmap("TIMES_full.npy", dtype=np.float64,  mode='w+', shape=((entries, nchan)))
 ANGLES_MM = np.memmap("ANGLES_full.npy", dtype=np.float64, mode='w+', shape=((entries, 7)))
 LABELS_MM = np.memmap("LABELS_full.npy", dtype=np.int64,  mode='w+', shape=(entries,))
 

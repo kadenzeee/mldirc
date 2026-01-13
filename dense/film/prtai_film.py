@@ -39,6 +39,8 @@ program_start = time.time()
 
 infile = "2M22TO90timing.npz"
 
+print("[INFO] Loading data from ", infile)
+
 f = np.load(infile, mmap_mode='r')
 TIMES, ANGLES, LABELS = f["TIMES"], f["ANGLES"], f["LABELS"]
 nevents = TIMES.shape[0]
