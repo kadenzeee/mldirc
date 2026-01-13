@@ -60,6 +60,8 @@ while t.next() and t.i() < entries:
     ANGLES[i] = [mu, std, t0, t1, np.sin(theta)*np.cos(phi), np.sin(theta)*np.sin(phi), np.cos(theta)]
     LABELS[i] = t.pid()/2 - 1
     
+    print(TIMES[i])
+    
     if ANGLES[i][4] == 0 and ANGLES[i][5] == 0 and ANGLES[i][6] == 0:
         print('[WARN] Zero angle detected. Investigate?')
     

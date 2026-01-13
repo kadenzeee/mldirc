@@ -20,6 +20,15 @@ s = float(args.s)
 
 tf.keras.mixed_precision.set_global_policy('mixed_bfloat16')
 
+gpus = tf.config.list_physical_devices('GPU')
+if gpus:
+    try:
+        for gpu in gpus:
+            tf.config.experimental.set_memory_growth(gpu, True)
+        print("[INFO] Enabled GPU memory growth")
+    except RuntimeError as e:
+        print(e)
+
 os.environ["ROBCLAS_VERBOSE"] = "0"
 os.environ["ROCM_INFO_LEVEL"] = "0"
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
@@ -35,6 +44,8 @@ TIMES, ANGLES, LABELS = f["TIMES"], f["ANGLES"], f["LABELS"]
 nevents = TIMES.shape[0]
 time_dim = TIMES.shape[1]
 angle_dim = ANGLES.shape[1]
+
+print(TIMES[0])
 
 print(f"[INFO] Data size: {sys.getsizeof(TIMES)//10**6} MB")
 

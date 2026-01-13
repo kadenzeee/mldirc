@@ -12,7 +12,7 @@
 #SBATCH --mail-user=d.markhoff@gsi.de
 
 # ---- paths ----
-SIF=/lustre/nyx/panda/markhoff/containers/tf-rocm/tensorflow_rocm6.4.1-py3.12-tf2.18-dev.sif
+SIF=/lustre/nyx/panda/markhoff/containers/tf-rocm/tensorflow_rocm6.3.3-py3.12-tf2.17-dev.sif
 WORKDIR=/lustre/panda/markhoff/dirc/mldirc/dense/film
 LOGDIR=$WORKDIR/logs
 
@@ -33,9 +33,13 @@ S=$(awk -v i="$i" -v n="$N_POINTS" -v smin="$S_MIN" -v smax="$S_MAX" \
 echo "[INFO] Running with s = $S"
 
 # ---- run inside container ----
-apptainer exec \
+/usr/bin/singularity exec \
   --rocm \
   --bind $WORKDIR:/workspace \
   --pwd /workspace \
   $SIF \
   python prtai_film.py -s $S
+
+
+
+
