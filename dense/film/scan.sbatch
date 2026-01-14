@@ -23,7 +23,9 @@ S_MIN=0.2
 S_MAX=2.0
 N_POINTS=21
 
-S=$(awk -v i="$i" -v n="$N_POINTS" -v smin="$S_MIN" -v smax="$S_MAX" \
+TASK_ID=${SLURM_ARRAY_TASK_ID}
+
+S=$(awk -v i="$TASK_ID" -v n="$N_POINTS" -v smin="$S_MIN" -v smax="$S_MAX" \
     'BEGIN {
         ratio = smax / smin
         s = smin * exp( (i / (n - 1)) * log(ratio) )
