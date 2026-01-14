@@ -5,7 +5,6 @@ import keras
 import time
 import datetime
 import numpy as np
-import math
 import sys, os, argparse
 import subprocess
 
@@ -37,7 +36,7 @@ print(f"[INFO] Environment set")
 
 program_start = time.time()
 
-infile = "2M22TO90timing.npz"
+infile = "500K22TO90timing.npz"
 
 print("[INFO] Loading data from ", infile)
 
@@ -47,10 +46,7 @@ nevents = TIMES.shape[0]
 time_dim = TIMES.shape[1]
 angle_dim = ANGLES.shape[1]
 
-print(TIMES[0])
-
 print(f"[INFO] Data size: {sys.getsizeof(TIMES)//10**6} MB")
-
 
 # ---------------------------------------------------------------
 #
@@ -230,8 +226,8 @@ a = keras.layers.Dense(widths[2], activation='gelu')(a)
 
 # Produce FiLM parameters
 gamma = keras.layers.Dense(widths[2], kernel_regularizer=keras.regularizers.L2(1e-04), name='gamma')(a)
-# push gamma towards 1 so that network is encouraged to use FiLM layer, not just ignore it
-#gamma = keras.layers.Lambda(lambda g: tf.exp(0.1*g))(gamma_raw)
+gamma = 1.0 + 0.1*gamma
+
 beta  = keras.layers.Dense(widths[2], activation='linear', name='beta')(a)
 
 # FiLM layer

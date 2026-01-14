@@ -18,7 +18,7 @@ except FileNotFoundError():
 
 os.makedirs("tmp", exist_ok=True)
 
-infile = "2M22TO90.root"
+infile = "500K22TO90.root"
 if(len(sys.argv) > 1):
     infile = sys.argv[1] 
 
