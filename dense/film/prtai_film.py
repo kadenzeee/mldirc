@@ -13,9 +13,11 @@ parser = argparse.ArgumentParser(
                     description='FiLM network for DIRC particle classification')
 
 parser.add_argument('-s', '--s', help='Log compression fall-off scale factor')
+parser.add_argument('-i', '--input', help='Data input file')
 args = parser.parse_args()
 
 s = float(args.s)
+infile = args.input
 
 tf.keras.mixed_precision.set_global_policy('mixed_bfloat16')
 
@@ -36,7 +38,7 @@ print(f"[INFO] Environment set")
 
 program_start = time.time()
 
-infile = "500K22TO90timing.npz"
+
 
 print("[INFO] Loading data from ", infile)
 
@@ -57,8 +59,8 @@ class_names = ['Pi+', 'Proton']
 num_classes = len(class_names) # Pions or kaons?
 
 
-batch_size  = 128 # How many events to feed to NN at a time?
-nepochs     = 10 # How many epochs?
+batch_size  = 256 # How many events to feed to NN at a time?
+nepochs     = 20 # How many epochs?
 
 trainfrac   = 0.7
 valfrac     = 0.15
@@ -174,7 +176,7 @@ N_max = 256
 widths = layer_dims(s, L, N_max)
 print(widths)
 
-dropout = 0.15
+dropout = 0.1
 
 # Time Data Branch
 hist_input = keras.Input(shape=(time_dim,))
@@ -221,13 +223,12 @@ angle_input = keras.Input(shape=(angle_dim,))
 scaled_input = ScaleAngles(initial_scale=1.0, dtype='bfloat16')(angle_input)
 
 a = keras.layers.LayerNormalization()(scaled_input)
-a = keras.layers.Dense(widths[1], activation='gelu')(a)
+a = keras.layers.Dense(7, activation='gelu')(a)
+a = keras.layers.Dense(widths[3], activation='gelu')(a)
 a = keras.layers.Dense(widths[2], activation='gelu')(a)
 
 # Produce FiLM parameters
 gamma = keras.layers.Dense(widths[2], kernel_regularizer=keras.regularizers.L2(1e-04), name='gamma')(a)
-gamma = 1.0 + 0.1*gamma
-
 beta  = keras.layers.Dense(widths[2], activation='linear', name='beta')(a)
 
 # FiLM layer
