@@ -14,7 +14,7 @@
 # ---- paths ----
 INPUT=/lustre/panda/markhoff/dirc/mldirc/dense/dualfilm/3M22TO140dualfilm_10bins.npz
 SIF=/lustre/nyx/panda/markhoff/containers/tf-rocm/tensorflow_rocm6.3.3-py3.12-tf2.17-dev.sif
-WORKDIR=/lustre/panda/markhoff/dirc/mldirc/dense/film
+WORKDIR=/lustre/panda/markhoff/dirc/mldirc/dense/dualfilm
 LOGDIR=$WORKDIR/logs
 
 mkdir -p $LOGDIR
