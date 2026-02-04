@@ -14,10 +14,12 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument('-s', '--s', help='Log compression fall-off scale factor')
 parser.add_argument('-i', '--input', help='Data input file')
+parser.add_argument('-o', '--output', help='Model output file', default='model.keras')
 args = parser.parse_args()
 
 s = float(args.s)
 infile = args.input
+outfile = args.output
 
 # Use float32 precision throughout to avoid quantization
 tf.keras.mixed_precision.set_global_policy('float32')
@@ -315,11 +317,11 @@ test_loss, test_acc = model.evaluate(
 print('\nTest accuracy:', test_acc)
 print('Test loss:', test_loss)
 
-subprocess.run('mkdir models', shell=True)
+subprocess.run(f'mkdir -p {outfile}', shell=True)
 date_str = datetime.date.today().isoformat()
 i = 1
 while True:
-    out_name = f"models/{date_str}_model{i}_s{s}.keras"
+    out_name = f"{outfile}/{date_str}_model{i}_s{s}.keras"
     if not os.path.exists(out_name):
         break
     i += 1
