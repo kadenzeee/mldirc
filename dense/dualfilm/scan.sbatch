@@ -5,14 +5,14 @@
 #SBATCH --partition=gpu
 #SBATCH --gres=gpu:1
 #SBATCH --cpus-per-task=4
-#SBATCH --mem=32G
-#SBATCH --time=24:00:00
+#SBATCH --mem=64G
+#SBATCH --time=12:00:00
 #SBATCH --array=0-20
 #SBATCH --mail-type=END,FAIL
 #SBATCH --mail-user=d.markhoff@gsi.de
 
 # ---- paths ----
-INPUT=""
+INPUT=/lustre/panda/markhoff/dirc/mldirc/dense/dualfilm/3M22TO140dualfilm_10bins.npz
 SIF=/lustre/nyx/panda/markhoff/containers/tf-rocm/tensorflow_rocm6.3.3-py3.12-tf2.17-dev.sif
 WORKDIR=/lustre/panda/markhoff/dirc/mldirc/dense/film
 LOGDIR=$WORKDIR/logs
@@ -20,8 +20,8 @@ LOGDIR=$WORKDIR/logs
 mkdir -p $LOGDIR
 
 # ---- scan params ----
-S_MIN=0.2
-S_MAX=2.0
+S_MIN=0.9
+S_MAX=0.900000000001
 N_POINTS=21
 
 TASK_ID=${SLURM_ARRAY_TASK_ID}
@@ -36,12 +36,12 @@ S=$(awk -v i="$TASK_ID" -v n="$N_POINTS" -v smin="$S_MIN" -v smax="$S_MAX" \
 echo "[INFO] Running with s = $S"
 
 # ---- run inside container ----
-/usr/bin/singularity exec \
+singularity exec \
   --rocm \
   --bind $WORKDIR:/workspace \
   --pwd /workspace \
   $SIF \
-  python prtai_dualfilm.py -s $S -i $INPUT
+  python prtai_dualfilm.py -s $S -i $INPUT -o "models10"
 
 
 

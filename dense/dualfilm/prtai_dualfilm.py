@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 
+import sys, os, argparse
+
+os.environ["TF_XLA_FLAGS"] = "--tf_xla_enable_xla_devices=false"
+os.environ["TF_ENABLE_XLA"] = "0"
+
 import tensorflow as tf
 import keras
 import time
 import datetime
 import numpy as np
-import sys, os, argparse
 import subprocess
 
 parser = argparse.ArgumentParser(
@@ -14,7 +18,7 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument('-s', '--s', help='Log compression fall-off scale factor')
 parser.add_argument('-i', '--input', help='Data input file')
-parser.add_argument('-o', '--output', help='Model output file', default='model.keras')
+parser.add_argument('-o', '--output', help='Model output file', default='models')
 args = parser.parse_args()
 
 s = float(args.s)
@@ -29,6 +33,7 @@ if gpus:
     try:
         for gpu in gpus:
             tf.config.experimental.set_memory_growth(gpu, True)
+            tf.config.optimizer.set_jit(False)
         print("[INFO] Enabled GPU memory growth")
     except RuntimeError as e:
         print(e)
@@ -72,8 +77,8 @@ class_names = ['Pi+', 'Proton']
 num_classes = len(class_names) # Pions or kaons?
 
 
-batch_size  = 2048 # How many events to feed to NN at a time?
-nepochs     = 50 # How many epochs?
+batch_size  = 1024 # How many events to feed to NN at a time?
+nepochs     = 40 # How many epochs?
 
 trainfrac   = 0.70
 valfrac     = 0.15
@@ -307,6 +312,7 @@ model.fit(
     train_gen,
     validation_data=val_gen,
     epochs=nepochs, 
+    validation_freq=4
     #callbacks=[ScheduledFiLMCallback(film, nepochs)],
 )
 
