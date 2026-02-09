@@ -10,7 +10,6 @@ import argparse
 import sys
 import shutil
 import signal
-import traceback
 import json
 import platform
 try:
@@ -26,6 +25,7 @@ parser = argparse.ArgumentParser(
 
 parser.add_argument('-i', '--input', help='Input ROOT file path', default='../film/500K22TO140.root')
 parser.add_argument('-n', '--nbins', type=int, help='Number of histogram bins', default=10)
+parser.add_argument('-tsmear', '--tsmear', type=float, help='Standard deviation of Gaussian noise added to photon arrival time data, in the same units as the input times (e.g. ns)', default=0.1)
 
 args = parser.parse_args()
 
@@ -142,7 +142,7 @@ while t.next() and t.i() < entries:
 
     i = t.i()
 
-    times = [photon.getLeadTime() + ROOT.gRandom.Gaus(0, 0.1) for photon in t.event().getHits()]
+    times = [photon.getLeadTime() + ROOT.gRandom.Gaus(0, args.tsmear) for photon in t.event().getHits()]
     chs   = [int(photon.getChannel()) for photon in t.event().getHits()]
     theta = (t.event().getTof() + ROOT.gRandom.Gaus(0, 3E-03)) * np.pi/180
     phi   = (t.event().getTofP() + ROOT.gRandom.Gaus(0, 3E-03)) * np.pi/180
@@ -310,9 +310,9 @@ LABELS_MM.flush()
 
 print('[INFO] Shuffle complete')
 
-outfile = infile.replace(".root", f"dualfilm_{nbins}bins")
+outfile = infile.replace(".root", f"dualfilm_{args.tsmear}ns")
 outfile = os.path.basename(outfile)
-np.savez_compressed(f"{outfile}.npz", TIMES=TIMES_MM, HISTS=HISTS_MM, ANGLES=ANGLES_MM, LABELS=LABELS_MM)
+np.savez_compressed(f"{outfile}.npz", TIMES=TIMES_MM, HISTS=HISTS_MM, ANGLES=ANGLES_MM, LABELS=LABELS_MM, logs=args.__dict__)
 
 subprocess.run("rm TIMES_full.npy", shell=True)
 subprocess.run("rm HISTS_full.npy", shell=True)
