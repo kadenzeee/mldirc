@@ -73,12 +73,12 @@ print(f"[INFO] Data size: {sys.getsizeof(TIMES)//10**6} MB")
 #                       PARAMETERS
 #
 # ---------------------------------------------------------------
-class_names = ['Pi+', 'Proton']
+class_names = ['Pi+', 'Kaon+']
 num_classes = len(class_names) # Pions or kaons?
 
 
 batch_size  = 1024 # How many events to feed to NN at a time?
-nepochs     = 40 # How many epochs?
+nepochs     = 50 # How many epochs?
 
 trainfrac   = 0.70
 valfrac     = 0.15
