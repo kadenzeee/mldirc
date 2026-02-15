@@ -23,17 +23,29 @@ parser = argparse.ArgumentParser(
     prog='convert_dualfilm',
     description='Convert ROOT data to numpy arrays for dualfilm training')
 
-parser.add_argument('-i', '--input', help='Input ROOT file path', default='../film/500K22TO140.root')
+parser.add_argument('-i', '--input', help='Input ROOT file path', default='500K22TO140.root')
 parser.add_argument('-n', '--nbins', type=int, help='Number of histogram bins', default=10)
 parser.add_argument('-tsmear', '--tsmear', type=float, help='Standard deviation of Gaussian noise added to photon arrival time data, in the same units as the input times (e.g. ns)', default=0.1)
 
 args = parser.parse_args()
 
 ROOT.gInterpreter.ProcessLine('#include "../../../prttools/PrtTools.h"')
-try:
-    ROOT.gSystem.Load("../../../prtdirc/build/libPrt.dylib")
-except FileNotFoundError():
-    ROOT.gSystem.Load("../../../prtdirc/build/libPrt.so")
+
+
+libbase = "../../../prtdirc/build/libPrt"
+
+if platform.system() == "Darwin":
+    libpath = libbase + ".dylib"
+else:
+    libpath = libbase + ".so"
+
+if not os.path.exists(libpath):
+    raise FileNotFoundError(f"Library not found: {libpath}")
+
+ret = ROOT.gSystem.Load(libpath)
+
+if ret != 0:
+    raise RuntimeError(f"ROOT failed to load {libpath}")
 
 os.makedirs("tmp", exist_ok=True)
 
