@@ -1,7 +1,7 @@
 #!/bin/bash
 #SBATCH --job-name=clconv
-#SBATCH --output=clconv_%A_%a.out
-#SBATCH --error=clconv_%A_%a.err
+#SBATCH --output=logs/clconv_%A_%a.out
+#SBATCH --error=logs/clconv_%A_%a.err
 #SBATCH --time=12:00:00
 #SBATCH --partition=long
 #SBATCH --mem=8G
@@ -32,3 +32,5 @@ singularity exec \
     --start $START \
     --end $END \
     --shuffle
+
+
