@@ -2,8 +2,8 @@
 #SBATCH --job-name=clconv
 #SBATCH --output=logs/clconv_%A_%a.out
 #SBATCH --error=logs/clconv_%A_%a.err
-#SBATCH --time=12:00:00
-#SBATCH --partition=long
+#SBATCH --time=00:30:00
+#SBATCH --partition=main
 #SBATCH --mem=8G
 #SBATCH --array=0-31
 
