@@ -28,7 +28,7 @@ singularity exec \
 	$SIF \
     python clconv.py \
     -i $INPUT_ROOT \
-    -o $WORKDIR/data \
+    -o data \
     --start $START \
     --end $END \
     --shuffle
