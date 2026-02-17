@@ -3,13 +3,22 @@
 import numpy as np
 import os
 import glob
+import argparse
 
 # ------------------------------------------------------------
-# Configure shapes (must match conversion script)
+# Arguments
+# ------------------------------------------------------------
+
+parser = argparse.ArgumentParser(description="Merge chunk files into final memmaps")
+parser.add_argument('-i', '--input', required=True, help="Input directory containing chunk files")
+args = parser.parse_args()
+
+# ------------------------------------------------------------
+# Configure shapes
 # ------------------------------------------------------------
 
 nbins = 10        # must match training config
-npmt  = 16        # adjust if needed
+npmt  = 8         # adjust if needed
 npix  = 64        # adjust if needed
 
 nchan = npmt * npix
@@ -20,19 +29,15 @@ angle_size = 7
 # Find chunk files
 # ------------------------------------------------------------
 
-hist_files  = sorted(glob.glob("*_HISTS.dat"))
-time_files  = sorted(glob.glob("*_TIMES.dat"))
-angle_files = sorted(glob.glob("*_ANGLES.dat"))
-label_files = sorted(glob.glob("*_LABELS.dat"))
+hist_files  = sorted(glob.glob(f"{args.input}/*_HISTS.dat"))
+time_files  = sorted(glob.glob(f"{args.input}/*_TIMES.dat"))
+angle_files = sorted(glob.glob(f"{args.input}/*_ANGLES.dat"))
+label_files = sorted(glob.glob(f"{args.input}/*_LABELS.dat"))
 
 assert len(hist_files) > 0, "No chunk files found"
 assert len(hist_files) == len(time_files) == len(angle_files) == len(label_files)
 
 print(f"[INFO] Found {len(hist_files)} chunks")
-
-# ------------------------------------------------------------
-# Determine total entries
-# ------------------------------------------------------------
 
 chunk_sizes = []
 for f in hist_files:
@@ -45,7 +50,7 @@ total_entries = sum(chunk_sizes)
 print(f"[INFO] Total entries: {total_entries}")
 
 # ------------------------------------------------------------
-# Create final memmaps
+# final memmaps
 # ------------------------------------------------------------
 
 HISTS  = np.memmap("HISTS_full.dat",  dtype=np.int8,    mode='w+', shape=(total_entries, hist_size))
@@ -53,9 +58,6 @@ TIMES  = np.memmap("TIMES_full.dat",  dtype=np.float16, mode='w+', shape=(total_
 ANGLES = np.memmap("ANGLES_full.dat", dtype=np.float16, mode='w+', shape=(total_entries, angle_size))
 LABELS = np.memmap("LABELS_full.dat", dtype=np.int8,    mode='w+', shape=(total_entries,))
 
-# ------------------------------------------------------------
-# Merge sequentially
-# ------------------------------------------------------------
 
 offset = 0
 

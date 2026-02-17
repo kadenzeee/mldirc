@@ -23,6 +23,7 @@ parser.add_argument('-i', '--input', required=True)
 parser.add_argument('-o', '--output', required=False, help="Output file prefix (default: same as input)", default=None)
 parser.add_argument('-n', '--nbins', type=int, default=10)
 parser.add_argument('-tsmear', '--tsmear', type=float, default=0.1)
+parser.add_argument('-asmear', '--asmear', type=float, default=3E-03)
 
 parser.add_argument('--start', type=int, default=0)
 parser.add_argument('--end', type=int, default=None)
@@ -130,8 +131,8 @@ while t.next():
     hist2d = np.histogram2d(times, chs, bins=[tedges, mcpedges])[0]
 
     # Angles
-    theta = event.getTof()  * np.pi/180
-    phi   = event.getTofP() * np.pi/180
+    theta = event.getTof()  * np.pi/180 + np.random.normal(0, args.tsmear)
+    phi   = event.getTofP() * np.pi/180 + np.random.normal(0, args.asmear)
 
     direction = [
         np.sin(theta)*np.cos(phi),
