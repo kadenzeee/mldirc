@@ -62,7 +62,7 @@ npix  = t.npix()
 nchan = npmt * npix
 nbins = args.nbins
 
-tedges = np.linspace(-30, 30, nbins+1)
+tedges = np.linspace(-50, 50, nbins+1)
 mcpedges = np.arange(npmt+1) * npix
 
 # ------------------------------------------------------------
@@ -111,6 +111,8 @@ while t.next():
         times[k] = photon.getLeadTime()
         chs[k]   = photon.getChannel()
 
+    
+
     # Smearing (vectorised)
     if args.tsmear > 0:
         times += np.random.normal(0, args.tsmear, nh)
@@ -122,7 +124,7 @@ while t.next():
     tmax = times.max()
 
     times -= mu
-
+    
     # Channel time accumulator
     chind = np.zeros(nchan, dtype=np.float32)
     chind[chs] += times
@@ -134,21 +136,17 @@ while t.next():
     theta = event.getTof()  * np.pi/180 + np.random.normal(0, args.tsmear)
     phi   = event.getTofP() * np.pi/180 + np.random.normal(0, args.asmear)
 
-    direction = [
-        np.sin(theta)*np.cos(phi),
-        np.sin(theta)*np.sin(phi),
-        np.cos(theta)
-    ]
+    momentum = [event.getMomentum()[0], event.getMomentum()[1], event.getMomentum()[2]]
 
     # Write directly to memmaps
     HISTS[write_index]  = hist2d.flatten().astype(np.int8)
     TIMES[write_index]  = chind.astype(np.float16)
-    ANGLES[write_index] = [mu, std, tmin, tmax] + direction
-    LABELS[write_index] = t.pid()/2 - 1
+    ANGLES[write_index] = [mu, std, tmin, tmax] + momentum
+    LABELS[write_index] = t.pid() - 2 # PID 2 = pion, 3 = kaon -> map to 0,1 for binary classification
 
     write_index += 1
-    
-    
+
+
 # ------------------------------------------------------------
 # Optional Shuffle
 # ------------------------------------------------------------
