@@ -131,17 +131,21 @@ while t.next():
 
     # 2D histogram
     hist2d = np.histogram2d(times, chs, bins=[tedges, mcpedges])[0]
-
-    # Angles
-    theta = event.getTof()  * np.pi/180 + np.random.normal(0, args.tsmear)
-    phi   = event.getTofP() * np.pi/180 + np.random.normal(0, args.asmear)
-
-    momentum = [event.getMomentum()[0], event.getMomentum()[1], event.getMomentum()[2]]
+    
+    # Momentum
+    momentum = np.sqrt(event.getMomentum()[0]**2 + event.getMomentum()[1]**2 + event.getMomentum()[2]**2)
+    theta = np.arccos(event.getMomentum()[2]/momentum) 
+    phi   = np.arctan2(event.getMomentum()[1]/event.getMomentum()[0])
+    
+    theta += np.random.normal(0, args.asmear)
+    phi   += np.random.normal(0, args.asmear)
+    
+    vecmomentum = [momentum*np.sin(theta)*np.cos(phi), momentum*np.sin(theta)*np.sin(phi), momentum*np.cos(theta)] 
 
     # Write directly to memmaps
     HISTS[write_index]  = hist2d.flatten().astype(np.int8)
     TIMES[write_index]  = chind.astype(np.float16)
-    ANGLES[write_index] = [mu, std, tmin, tmax] + momentum
+    ANGLES[write_index] = [mu, std, tmin, tmax] + vecmomentum
     LABELS[write_index] = t.pid() - 2 # PID 2 = pion, 3 = kaon -> map to 0,1 for binary classification
 
     write_index += 1
