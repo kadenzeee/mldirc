@@ -135,7 +135,10 @@ while t.next():
     # Momentum
     momentum = np.sqrt(event.getMomentum()[0]**2 + event.getMomentum()[1]**2 + event.getMomentum()[2]**2)
     theta = np.arccos(event.getMomentum()[2]/momentum) 
-    phi   = np.arctan(event.getMomentum()[1]/event.getMomentum()[0])
+    if event.getMomentum()[0] != 0:
+        phi   = np.arctan(event.getMomentum()[1]/event.getMomentum()[0])
+    else:
+        phi = 0.0
     
     theta += np.random.normal(0, args.asmear)
     phi   += np.random.normal(0, args.asmear)
