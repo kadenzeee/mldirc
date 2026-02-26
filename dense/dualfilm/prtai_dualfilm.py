@@ -48,23 +48,23 @@ program_start = time.time()
 
 
 
-print("[INFO] Loading data from ", infile)
+print("[INFO] Loading .dat from ", infile)
 
-f = np.load(infile, mmap_mode='r')
-TIMES, HISTS, ANGLES, LABELS = f["TIMES"], f["HISTS"], f["ANGLES"], f["LABELS"]
+# ------------------------------------------------
+# SET THESE PARAMS
+# ------------------------------------------------
 
-# Expand compressed datatypes to full precision for training
-TIMES = TIMES.astype(np.float32)
-HISTS = HISTS.astype(np.float32)
-ANGLES = ANGLES.astype(np.float32)
-LABELS = LABELS.astype(np.int32)
+nevents = 20000000
+time_dim = 8*64
+hist_dim = 10*8
+angle_dim = 7
 
-print(f"[INFO] Expanded datatypes: TIMES={TIMES.dtype}, HISTS={HISTS.dtype}, ANGLES={ANGLES.dtype}, LABELS={LABELS.dtype}")
+# ------------------------------------------------
 
-nevents = TIMES.shape[0]
-time_dim = TIMES.shape[1]
-hist_dim = HISTS.shape[1]
-angle_dim = ANGLES.shape[1]
+TIMES = np.memmap(f"{infile}/TIMES_full.dat",  dtype=np.float16, mode='r', shape=(nevents, time_dim))
+HISTS = np.memmap(f"{infile}/HISTS_full.dat",  dtype=np.int8,    mode='r', shape=(nevents, hist_dim))
+ANGLES = np.memmap(f"{infile}/ANGLES_full.dat", dtype=np.float16, mode='r', shape=(nevents, angle_dim))
+LABELS = np.memmap(f"{infile}/LABELS_full.dat", dtype=np.int8,    mode='r', shape=(nevents,))
 
 print(f"[INFO] Data size: {sys.getsizeof(TIMES)//10**6} MB")
 
@@ -291,7 +291,7 @@ x_mod = x * gamma + beta
 drop = keras.layers.Dropout(dropout, name='dropout2')(x_mod)
 x = keras.layers.Dense(widths[3], activation='gelu')(drop)
 x = keras.layers.Dense(widths[4], activation='gelu')(x)
-out = keras.layers.Dense(num_classes, activation='softmax', name='output')(x)
+out = keras.layers.Dense(num_classes, activation='softmax')(x)
 
 
 model = keras.Model(inputs=[time_input, hist_input, angle_input], outputs=out)
