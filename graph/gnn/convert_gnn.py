@@ -84,7 +84,7 @@ while f.next() and len(all_hits) < entries:
     for h in hits:
         x = h.getPosition()[0]
         y = h.getPosition()[1]
-        t = h.getLeadTime()
+        t = h.getLeadTime() + ROOT.gRandom.Gaus(0, 0.1) # add small Gaussian smearing to times to better simulate real detector resolution
         
         # Relative features to track impingement position
         node_features.append([
