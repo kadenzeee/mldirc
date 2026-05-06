@@ -322,7 +322,7 @@ if __name__ == "__main__":
             prev_time = time.time()
         
         print(f'Epoch {epoch}, Loss: {total_loss:.4f}')
-        torch.save(model.state_dict(), f"{outdir}/weights__epoch-{epoch}__loss-{total_loss:.4f}.pt")
+        torch.save(model.state_dict(), f"{outdir}/weights__epoch-{epoch}__loss-{total_loss/len(dataset):.4f}.pt")
     
     with open(f"{outdir}/run_info.txt", "w") as f:
         f.write(str(model))
