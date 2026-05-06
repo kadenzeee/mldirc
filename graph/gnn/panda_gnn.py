@@ -223,6 +223,7 @@ if __name__ == "__main__":
     # ----- Load (Single File Mode) ----- #
     
     from torch_geometric.loader import DataLoader
+    import torch.nn.functional as F
     
     if args.batch == 0:
         print('[INFO] Running in single .pkl file mode')
@@ -282,6 +283,7 @@ if __name__ == "__main__":
     
     for epoch in range(args.nepochs):
         total_loss = 0
+        total_samples = 0
         
         pbar = tqdm.tqdm(loader, desc=f'Epoch {epoch}')
         prev_time = time.time()
@@ -300,12 +302,13 @@ if __name__ == "__main__":
             
             out = model(batch)
             
-            loss = loss_fn(out, batch.y.view(-1))
+            loss = F.cross_entropy(out, batch.y.view(-1), reduction='sum')
             
             loss.backward()
             optimiser.step()
             
             total_loss += loss.item()
+            total_samples += batch.y.view(-1).size(0)
             
             # -----   ...   ----- #
             
@@ -317,8 +320,10 @@ if __name__ == "__main__":
             
             prev_time = time.time()
         
-        print(f'Epoch {epoch}, Loss: {total_loss:.4f}')
-        torch.save(model.state_dict(), f"{outdir}/weights__epoch-{epoch}__loss-{total_loss:.4f}.pt")
+        epoch_loss = total_loss / total_samples
+        
+        print(f'Epoch {epoch}, Loss: {epoch_loss:.4f}')
+        torch.save(model.state_dict(), f"{outdir}/weights__epoch-{epoch}__loss-{epoch_loss:.4f}.pt")
     
     with open(f"{outdir}/run_info.txt", "w") as f:
         f.write(str(model))
