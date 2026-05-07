@@ -52,6 +52,8 @@ while f.next() and len(all_hits) < entries:
     if f.event().getMomentum()[0] == 0 or f.event().getMomentum()[1] == 0 or f.event().getMomentum()[2] == 0:
         continue
     
+    hits = f.event().getHits()
+    
     # ------ PID ----- #
     
     pid = f.event().getPid() - 2 # minus 2 because prtdirc simulation labels Pi+ : 2 and Kaon+ : 3
@@ -67,7 +69,7 @@ while f.next() and len(all_hits) < entries:
         track_pos[0],
         track_pos[1],
         track_pos[2],
-        t0,
+        len(hits),
         mag_p,
         p[0]/mag_p,
         p[1]/mag_p,
@@ -75,8 +77,6 @@ while f.next() and len(all_hits) < entries:
     ])
     
     # ----- Hits ----- # 
-    
-    hits = f.event().getHits()
     
     node_features = []
     
