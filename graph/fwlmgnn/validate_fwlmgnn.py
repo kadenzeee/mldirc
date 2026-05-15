@@ -8,7 +8,7 @@ Imports a set of trained GNN models and evaluates them on a given test dataset, 
 import torch
 import numpy as np
 from torch_geometric.loader import DataLoader
-from panda_fwlmgnn import PandaGNN
+from panda_fwlmgnn import PandaGNN, PandaGNNLayer
 import torch.nn.functional as F
 
 def evaluate(model, dataset, batch_size=1024):
@@ -103,22 +103,27 @@ if __name__ == "__main__":
     model_files = sorted(model_files, key=extract_epoch)
     
     results = []
+    epochs = []
+    
+    print(f"[WARN] Loading and evaluating model files requires the execution of .pt files, which may contain arbitrary code. Ensure trust in the source of model files.")
     
     for model_file in model_files:
         print(f"Evaluating model: {model_file}")
         model_path = os.path.join(args.model_input, model_file)
-        model = PandaGNN(node_dim=3, edge_dim=3, global_dim=8, hidden_dim=64, n_classes=2)
-        model = torch.compile(model)
-        model.load_state_dict(torch.load(model_path, map_location=torch.device('cpu')))
+        
+        checkpoint = torch.load(model_path, map_location=torch.device('cpu'), weights_only=False)
+        config = checkpoint['model_config']
+        
+        model = PandaGNN(**config)
+
+        model.load_state_dict(checkpoint['model_state_dict'])
         
         accuracy, loss, all_preds, all_labels = evaluate(model, dataset)
         
-        
-        match = re.search(r"loss-([0-9]+\.[0-9]+)", model_file)
-        results.append((model_file, accuracy, loss, float(match.group(1))))
-    
-    
-    EPOCHS = list(map(extract_epoch, model_files))
+        train_loss = checkpoint["train_loss"]
+        epoch = checkpoint["epoch"]
+        results.append((model_file, accuracy, loss, train_loss))
+        epochs.append(epoch)
     
     filenames, accuracies, val_losses, train_losses = zip(*results)
 
@@ -134,14 +139,14 @@ if __name__ == "__main__":
     mpl.rc('font', family = 'serif', size = 14)
     
     fig, axs = plt.subplots(1, 2, figsize=(12, 5))
-    axs[0].plot(EPOCHS, accuracies, marker='o')
+    axs[0].plot(epochs, accuracies, marker='o')
     axs[0].set_xlabel('Epoch')
     axs[0].set_ylabel('Validation Accuracy')
     axs[0].set_title('Validation Accuracy vs. Epoch')
     axs[0].grid()
     
-    axs[1].plot(EPOCHS, val_losses, marker='o', label='Validation Loss')
-    axs[1].plot(EPOCHS, train_losses, marker='o', label='Training Loss')
+    axs[1].plot(epochs, val_losses, marker='o', label='Validation Loss')
+    axs[1].plot(epochs, train_losses, marker='o', label='Training Loss')
     axs[1].set_xlabel('Epoch')
     axs[1].set_ylabel('Loss')
     axs[1].set_yscale('log')

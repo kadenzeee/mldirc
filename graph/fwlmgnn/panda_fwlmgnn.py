@@ -7,6 +7,8 @@ Run from CLI:
 python panda_fwlmgnn.py -i dataset/ -o models
 '''
 
+from importlib.resources import path
+
 import torch
 import subprocess
 
@@ -83,6 +85,16 @@ class PandaGNN(nn.Module):
     def __init__(self, node_dim, edge_dim, global_dim, hidden_dim, n_classes, mlp_layers=1, mlp_dim=64, gnn_layers=2):
         super().__init__()
         
+        self.num_gnn_layers = gnn_layers
+        
+        self.node_dim = node_dim
+        self.edge_dim = edge_dim
+        self.global_dim = global_dim
+        self.hidden_dim = hidden_dim
+        self.n_classes = n_classes
+        self.mlp_layers = mlp_layers
+        self.mlp_dim = mlp_dim
+
         self.gnn_layers = nn.ModuleList()
         
         for _ in range(gnn_layers):
@@ -258,7 +270,7 @@ if __name__ == "__main__":
     from torch_geometric.loader import DataLoader
     import torch.nn.functional as F
     
-    if args.batch == 0:
+    if not args.batch:
         print('[INFO] Running in single .pkl file mode')
         with open(args.input, "rb") as f:
             data = pickle.load(f)
@@ -283,7 +295,7 @@ if __name__ == "__main__":
     
     # ----- Load (Batch File Mode) ----- #
     
-    if args.batch == 1:
+    if args.batch:
         print('[INFO] Running in batch .pkl file mode')
         dataset = PandaGNNDataset(args.input, nevents=args.nevents)
         print(f'[INFO] Dataset class initialised with {len(dataset)} events across {len(dataset.files)} files. Cache size: {dataset.cache_size} files.')
@@ -297,21 +309,24 @@ if __name__ == "__main__":
     
     n = 1
     while True:
-        outdir = f'models/{args.output}_{n}__{datetime.date.today().strftime('%Y-%m-%d')}'
+        outdir = f"models/{args.output}_{n}__{datetime.date.today().strftime('%Y-%m-%d')}"
         if not os.path.exists(outdir):
             break
         n += 1
     
     subprocess.run(f"mkdir -p {outdir}", shell=True)
     
-    model = PandaGNN(node_dim=3, edge_dim=3, global_dim=8, hidden_dim=64, n_classes=2, mlp_layers=args.mlp_layers, mlp_dim=args.mlp_dim, gnn_layers=args.gnn_layers)
-    model = torch.compile(model)
-    optimiser = torch.optim.Adam(model.parameters(), lr=1e-3)
-    
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+    
+    model = PandaGNN(node_dim=3, edge_dim=3, global_dim=8, hidden_dim=64, n_classes=2, mlp_layers=args.mlp_layers, mlp_dim=args.mlp_dim, gnn_layers=args.gnn_layers)
     model.to(device)
     
+    compiled = torch.compile(model)
+    optimiser = torch.optim.Adam(model.parameters(), lr=1e-3)
+    
     print(f'[INFO] Starting training on device: {device}')
+    
+    compiled.train()
     
     for epoch in range(args.nepochs):
         total_loss = 0
@@ -332,7 +347,7 @@ if __name__ == "__main__":
             
             optimiser.zero_grad()
             
-            out = model(batch)
+            out = compiled(batch)
             
             loss = F.cross_entropy(out, batch.y.view(-1), reduction='sum')
             
@@ -355,7 +370,32 @@ if __name__ == "__main__":
         epoch_loss = total_loss / total_samples
         
         print(f'Epoch {epoch}, Loss: {epoch_loss:.4f}')
-        torch.save(model.state_dict(), f"{outdir}/weights__epoch-{epoch}__loss-{epoch_loss:.4f}.pt")
+        
+        checkpoint = {
+            "model_state_dict": model.state_dict(),
+            
+            "optimiser_state_dict": optimiser.state_dict(),
+
+            "model_config": {
+                "node_dim": model.node_dim,
+                "edge_dim": model.edge_dim,
+                "global_dim": model.global_dim,
+                "hidden_dim": model.hidden_dim,
+                "n_classes": model.n_classes,
+                "mlp_layers": model.mlp_layers,
+                "mlp_dim": model.mlp_dim,
+                "gnn_layers": model.num_gnn_layers,
+            },
+            
+            "args": vars(args),
+            
+            "epoch": epoch,
+            "train_loss": epoch_loss,
+            "batch_size": loader.batch_size,
+            "num_events": len(dataset),
+        }
+
+        torch.save(checkpoint, f"{outdir}/weights__epoch-{epoch}__loss-{epoch_loss:.4f}.pt")
     
     with open(f"{outdir}/run_info.txt", "w") as f:
         f.write(str(model))
