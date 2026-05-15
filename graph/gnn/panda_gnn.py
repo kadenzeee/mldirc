@@ -18,22 +18,25 @@ import torch.nn as nn
 from torch_geometric.nn import MessagePassing
 
 class PandaGNNLayer(MessagePassing):
-    def __init__(self, node_dim, edge_dim, hidden_dim):
+    def __init__(self, node_dim, edge_dim, hidden_dim, mlp_layers=1, mlp_dim=64):
         super().__init__(aggr='add')    # Sum aggregation; other options include 'mean' and 'max'
-    
+        
         # MLP encoder for edges 
-        self.edge_mlp = nn.Sequential(
-            nn.Linear(2 * node_dim + edge_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, hidden_dim)
+        self.edge_mlp = self.build_mlp(
+            input_dim   = 2*node_dim + edge_dim, 
+            hidden_dim  = mlp_dim, 
+            output_dim  = hidden_dim, 
+            n_layers    = mlp_layers
         )
         
         # MLP encoder for nodes
-        self.node_mlp = nn.Sequential(
-            nn.Linear(node_dim + hidden_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, hidden_dim)
+        self.node_mlp = self.build_mlp(
+            input_dim   = node_dim + hidden_dim, 
+            hidden_dim  = mlp_dim, 
+            output_dim  = hidden_dim, 
+            n_layers    = mlp_layers
         )
+
     
     def forward(self, x, edge_index, edge_attr):
         return self.propagate(x=x, edge_index=edge_index, edge_attr=edge_attr)
@@ -50,6 +53,28 @@ class PandaGNNLayer(MessagePassing):
         
         h = torch.cat([x, aggr_out], dim=-1)
         return self.node_mlp(h)
+    
+
+    @staticmethod
+    def build_mlp(input_dim, hidden_dim, output_dim, n_layers):
+        '''
+        Helper function to build an MLP with given dimensions and number of ReLU-activated hidden layers.
+        '''
+        
+        layers = []
+        
+        layers.append(nn.Linear(input_dim, hidden_dim))
+        layers.append(nn.ReLU())
+        
+        for _ in range(n_layers - 1):
+            layers.append(nn.Linear(hidden_dim, hidden_dim))
+            layers.append(nn.ReLU())
+            
+        
+        layers.append(nn.Linear(hidden_dim, output_dim))
+        
+        return nn.Sequential(*layers)
+
 
 
 # ----- Model Architecture Definition ----- #
@@ -57,16 +82,20 @@ class PandaGNNLayer(MessagePassing):
 from torch_geometric.nn import global_mean_pool
 
 class PandaGNN(nn.Module):
-    def __init__(self, node_dim, edge_dim, global_dim, hidden_dim, n_classes):
+    def __init__(self, node_dim, edge_dim, global_dim, hidden_dim, n_classes, mlp_layers=1, mlp_dim=64, gnn_layers=2):
         super().__init__()
         
-        self.gnn1 = PandaGNNLayer(node_dim, edge_dim, hidden_dim)
-        self.gnn2 = PandaGNNLayer(hidden_dim, edge_dim, hidden_dim)
+        self.gnn_layers = nn.ModuleList()
         
-        self.classifier = nn.Sequential(
-            nn.Linear(hidden_dim + global_dim, hidden_dim),
-            nn.ReLU(),
-            nn.Linear(hidden_dim, n_classes)
+        for _ in range(gnn_layers):
+            self.gnn_layers.append(PandaGNNLayer(node_dim if _ == 0 else hidden_dim, edge_dim, hidden_dim, mlp_layers, mlp_dim))
+
+        
+        self.classifier = PandaGNNLayer.build_mlp(
+            input_dim   = hidden_dim + global_dim,
+            hidden_dim  = hidden_dim,
+            output_dim  = n_classes,
+            n_layers    = mlp_layers
         )
     
     def forward(self, data):
@@ -75,11 +104,9 @@ class PandaGNN(nn.Module):
         edge_attr = data.edge_attr
         batch = data.batch
         
-        x = self.gnn1(x, edge_index, edge_attr)
-        x = torch.relu(x)
-        
-        x = self.gnn2(x, edge_index, edge_attr)
-        x = torch.relu(x)
+        for gnn in self.gnn_layers:
+            x = gnn(x, edge_index, edge_attr)
+            x = torch.relu(x)
         
         # Pool
         x = global_mean_pool(x, batch)
@@ -217,6 +244,10 @@ if __name__ == "__main__":
     parser.add_argument('--batch', action='store_true', help='Load .pkl inputs in batch mode (0) or single file mode (1).')
     parser.add_argument('-nevents', '--nevents', type=int, default=None, help='Number of events to load from each .pkl file.')
     parser.add_argument('-nepochs', '--nepochs', type=int, default=20, help='Number of training epochs.')
+    parser.add_argument('--verbose', action='store_true', help='Print verbose output during training.')
+    parser.add_argument('-mlp-layers', '--mlp-layers', type=int, default=1, help='Number of layers in MLPs within GNN. Default: 1')
+    parser.add_argument('-mlp-dim', '--mlp-dim', type=int, default=64, help='Hidden dimension of MLPs within GNN. Default: 64')
+    parser.add_argument('-gnn-layers', '--gnn-layers', type=int, default=2, help='Number of GNN layers in the model. Default: 2')
     
     args = parser.parse_args()
     
@@ -271,7 +302,7 @@ if __name__ == "__main__":
     
     subprocess.run(f"mkdir -p {outdir}", shell=True)
     
-    model = PandaGNN(node_dim=3, edge_dim=3, global_dim=8, hidden_dim=64, n_classes=2)
+    model = PandaGNN(node_dim=3, edge_dim=3, global_dim=8, hidden_dim=64, n_classes=2, mlp_layers=args.mlp_layers, mlp_dim=args.mlp_dim, gnn_layers=args.gnn_layers)
     model = torch.compile(model)
     optimiser = torch.optim.Adam(model.parameters(), lr=1e-3)
     loss_fn = nn.CrossEntropyLoss()
