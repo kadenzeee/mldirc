@@ -156,4 +156,5 @@ if __name__ == "__main__":
     
 
     plt.tight_layout()
+    plt.savefig(f"{args.model_input}/validation_results.png")
     plt.show()

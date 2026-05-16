@@ -61,6 +61,7 @@ def plot_confusion_matrix(preds, labels):
     plt.xticks([0.5, 1.5], [r'$\pi$+', r'$K$+'])
     plt.yticks([0.5, 1.5], [r'$\pi$+', r'$K$+'])
     plt.title('Confusion Matrix')
+    plt.savefig(f"{args.model_input}/confusion_matrix.png")
     plt.show()
 
 def plot_sep_theta(preds, labels, dataset):
@@ -116,6 +117,7 @@ def plot_sep_theta(preds, labels, dataset):
     plt.xlim(20, 145)
     plt.title(r'Model Accuracy vs. $\theta$')
     plt.grid()
+    plt.savefig(f"{args.model_input}/accuracy_vs_theta.png")
     plt.show()
 
 def plot_sep_mom(preds, labels, dataset):
@@ -153,6 +155,7 @@ def plot_sep_mom(preds, labels, dataset):
     
     plt.title(r'Model Accuracy vs. Momentum')
     plt.grid()
+    plt.savefig(f"{args.model_input}/accuracy_vs_momentum.png")
     plt.show()
 
 
