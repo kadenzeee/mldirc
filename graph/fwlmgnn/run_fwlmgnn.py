@@ -8,6 +8,7 @@ Imports a trained GNN model and evaluates it on a given test dataset, printing t
 import torch
 from torch_geometric.loader import DataLoader
 from panda_fwlmgnn import PandaGNN
+import os
 
 def evaluate(model, dataset, batch_size=1024):
     loader = DataLoader(dataset, batch_size=batch_size, shuffle=False)
@@ -61,7 +62,7 @@ def plot_confusion_matrix(preds, labels):
     plt.xticks([0.5, 1.5], [r'$\pi$+', r'$K$+'])
     plt.yticks([0.5, 1.5], [r'$\pi$+', r'$K$+'])
     plt.title('Confusion Matrix')
-    plt.savefig(f"{args.model_input}/confusion_matrix.png")
+    plt.savefig(f"{os.path.dirname(args.model_input)}/confusion_matrix.png")
     plt.show()
 
 def plot_sep_theta(preds, labels, dataset):
@@ -117,7 +118,7 @@ def plot_sep_theta(preds, labels, dataset):
     plt.xlim(20, 145)
     plt.title(r'Model Accuracy vs. $\theta$')
     plt.grid()
-    plt.savefig(f"{args.model_input}/accuracy_vs_theta.png")
+    plt.savefig(f"{os.path.dirname(args.model_input)}/accuracy_vs_theta.png")
     plt.show()
 
 def plot_sep_mom(preds, labels, dataset):
@@ -155,7 +156,7 @@ def plot_sep_mom(preds, labels, dataset):
     
     plt.title(r'Model Accuracy vs. Momentum')
     plt.grid()
-    plt.savefig(f"{args.model_input}/accuracy_vs_momentum.png")
+    plt.savefig(f"{os.path.dirname(args.model_input)}/accuracy_vs_momentum.png")
     plt.show()
 
 
