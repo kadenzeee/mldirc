@@ -264,6 +264,7 @@ if __name__ == "__main__":
     parser.add_argument('-mlp-layers', '--mlp-layers', type=int, default=1, help='Number of layers in MLPs within GNN. Default: 1')
     parser.add_argument('-mlp-dim', '--mlp-dim', type=int, default=64, help='Hidden dimension of MLPs within GNN. Default: 64')
     parser.add_argument('-gnn-layers', '--gnn-layers', type=int, default=2, help='Number of GNN layers in the model. Default: 2')
+    parser.add_argument('--compile', action='store_true', help='Compile the model with torch.compile for faster training (may cause issues on some platforms).')
     
     args = parser.parse_args()
     
@@ -323,12 +324,13 @@ if __name__ == "__main__":
     model = PandaGNN(node_dim=3, edge_dim=3, global_dim=8, hidden_dim=64, n_classes=2, mlp_layers=args.mlp_layers, mlp_dim=args.mlp_dim, gnn_layers=args.gnn_layers)
     model.to(device)
     
-    compiled = torch.compile(model)
+    if args.compile: model = torch.compile(model)
+    
     optimiser = torch.optim.Adam(model.parameters(), lr=1e-3)
     
     print(f'[INFO] Starting training on device: {device}')
     
-    compiled.train()
+    model.train()
     
     for epoch in range(args.nepochs):
         total_loss = 0
@@ -349,7 +351,7 @@ if __name__ == "__main__":
             
             optimiser.zero_grad()
             
-            out = compiled(batch)
+            out = model(batch)
             
             loss = F.cross_entropy(out, batch.y.view(-1), reduction='sum')
             
