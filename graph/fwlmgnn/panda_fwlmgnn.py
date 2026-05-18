@@ -13,6 +13,8 @@ import torch
 import subprocess
 
 torch.multiprocessing.set_sharing_strategy('file_system')
+torch.set_float32_matmul_precision('high')
+torch._dynamo.config.capture_scalar_outputs = True
 
 # ----- MLP Layer ----- #
 
@@ -299,7 +301,7 @@ if __name__ == "__main__":
         print('[INFO] Running in batch .pkl file mode')
         dataset = PandaGNNDataset(args.input, nevents=args.nevents)
         print(f'[INFO] Dataset class initialised with {len(dataset)} events across {len(dataset.files)} files. Cache size: {dataset.cache_size} files.')
-        loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=False, num_workers=2, prefetch_factor=1, persistent_workers=False)
+        loader = DataLoader(dataset, batch_size=args.batch_size, shuffle=False, num_workers=2, prefetch_factor=1, persistent_workers=True, pin_memory=True)
         print(f'[INFO] DataLoader initialised with batch size {args.batch_size}.')
     
     # ----- Training Loop ----- #
