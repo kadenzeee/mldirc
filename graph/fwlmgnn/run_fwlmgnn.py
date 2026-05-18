@@ -202,9 +202,12 @@ if __name__ == "__main__":
         
         dataset.append(graph)
     
-    model = PandaGNN(node_dim=3, edge_dim=3, global_dim=8, hidden_dim=64, n_classes=2)
-    model = torch.compile(model)
-    model.load_state_dict(torch.load(args.model_input, map_location=torch.device('cpu')))
+    checkpoint = torch.load(args.model_input, map_location=torch.device('cpu'), weights_only=False)
+    config = checkpoint['model_config']
+    
+    model = PandaGNN(**config)
+    
+    model.load_state_dict(checkpoint['model_state_dict'])
     
     accuracy, all_preds, all_labels = evaluate(model, dataset)
     
