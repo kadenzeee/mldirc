@@ -244,6 +244,17 @@ class PandaGNNDataset(Dataset):
         
         return graph
 
+
+def batch_diagnostics(batch):
+    print(batch.x.dtype)
+    print(batch.edge_index.dtype)
+    print(batch.edge_attr.dtype)
+    
+    print(batch.edge_index.min())
+    print(batch.edge_index.max())
+    
+    print(batch.x.shape)
+
 # ----- Main ----- #
 
 if __name__ == "__main__":
