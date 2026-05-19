@@ -322,7 +322,7 @@ if __name__ == "__main__":
     
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     
-    model = PandaGNN(node_dim=3, edge_dim=3, global_dim=8, hidden_dim=64, n_classes=2, mlp_layers=args.mlp_layers, mlp_dim=args.mlp_dim, gnn_layers=args.gnn_layers)
+    model = PandaGNN(node_dim=3, edge_dim=3, global_dim=args.global_dim, hidden_dim=64, n_classes=2, mlp_layers=args.mlp_layers, mlp_dim=args.mlp_dim, gnn_layers=args.gnn_layers)
     model.to(device)
     
     if args.compile: model = torch.compile(model)
