@@ -19,7 +19,7 @@ parser = argparse.ArgumentParser(prog='convert_gnn',
                                  description='Converts prtdirc simulation data into a format suitable for training a GNN.')
 
 parser.add_argument('-i', '--input', type=str, required=True, help='Path to input ROOT file.')
-parser.add_argument('-o', '--output', type=str, required=False, help='Path to output .npz file')
+parser.add_argument('-o', '--output', type=str, required=False, help='Path to output .pkl file. If not provided, defaults to gnn_data.pkl in the current directory.')
 parser.add_argument('-tadj', '--threshold-time-adjacency', type = float, default=15.0, help='Time threshold for edge adjacency of photons (ns). Default: 50.0')
 parser.add_argument('-radj', '--threshold-radial-adjacency', type=float, default=350.0, help='Radial distance threshold for edge adjacency of photons (mm). Default: 350.0')
 parser.add_argument('--verbose', action='store_true', help='Print verbose output during edge construction.')

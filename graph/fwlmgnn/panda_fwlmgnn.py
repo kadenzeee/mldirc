@@ -204,8 +204,6 @@ class PandaGNNDataset(Dataset):
                 
                 total += take
         
-        print(f'[INFO] Supply -nevents {n_file_events} to speed up loading in future runs.')
-        
         self.cache_size = cache_size
         
         self._current_file_id = None
