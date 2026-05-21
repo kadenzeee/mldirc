@@ -140,13 +140,6 @@ if args.verbose:
         print(f'{len(all_hits[event]) * (len(all_hits[event]) - 1) - len(all_edges[event])} edges deleted out of {len(all_hits[event]) * (len(all_hits[event]) - 1)} possible edges ({100.0 * (1 - len(all_edges[event]) / (len(all_hits[event]) * (len(all_hits[event]) - 1))):.2f}% sparsity)')
         print('---')
 
-if args.save_sparsities:
-    with open(f'sparsities-tadj{args.threshold_time_adjacency}-radj{args.threshold_radial_adjacency}.csv', 'w') as f:
-        f.write('event,sparsity\n')
-        for event in range(len(all_hits)):
-            sparsity = 100.0 * (1 - len(all_edges[event]) / (len(all_hits[event]) * (len(all_hits[event]) - 1)))
-            f.write(f'{event},{sparsity:.2f}\n')
-
 # ----- Save to .pkl ----- #
 
 data = {
@@ -169,3 +162,11 @@ with open(outfilename.replace('.pkl', '_header.json'), 'w') as f:
         "nedges" : [len(edges) for edges in all_edges],
         "nevents" : len(all_hits)
     }, f)
+
+if args.save_sparsities:
+    import os
+    with open(f'{os.path.dirname(outfilename)}/sparsities-tadj{args.threshold_time_adjacency}-radj{args.threshold_radial_adjacency}.csv', 'w') as f:
+        f.write('event,sparsity\n')
+        for event in range(len(all_hits)):
+            sparsity = 100.0 * (1 - len(all_edges[event]) / (len(all_hits[event]) * (len(all_hits[event]) - 1)))
+            f.write(f'{event},{sparsity:.2f}\n')
