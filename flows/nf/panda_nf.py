@@ -23,27 +23,26 @@ class FiLM(nn.Module):
 
     def __init__(self, cond_dim, hidden_dim):
         super().__init__()
-
+        
         self.gamma = nn.Sequential(
             nn.Linear(cond_dim, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, hidden_dim)
         )
-
+        
         self.beta = nn.Sequential(
             nn.Linear(cond_dim, hidden_dim),
             nn.ReLU(),
             nn.Linear(hidden_dim, hidden_dim)
         )
-
+    
     def forward(self, x, c):
-
         # x : (B, Nphotons, hidden_dim)
         # c : (B, cond_dim)
-
+        
         gamma = self.gamma(c).unsqueeze(1)
         beta  = self.beta(c).unsqueeze(1)
-
+        
         return gamma * x + beta
 
 
@@ -62,15 +61,14 @@ class PhotonTransformer(nn.Module):
         num_layers=4,
         dropout=0.1
     ):
-
+    
         super().__init__()
-
         self.embedding = nn.Sequential(
             nn.Linear(photon_dim, d_model),
             nn.ReLU(),
             nn.Linear(d_model, d_model)
         )
-
+        
         encoder_layer = nn.TransformerEncoderLayer(
             d_model=d_model,
             nhead=nhead,
@@ -78,59 +76,57 @@ class PhotonTransformer(nn.Module):
             dropout=dropout,
             batch_first=True
         )
-
+        
         self.transformer = nn.TransformerEncoder(
             encoder_layer,
             num_layers=num_layers
         )
-
+        
         self.film = FiLM(cond_dim, d_model)
-
+        
         self.output_proj = nn.Sequential(
             nn.Linear(d_model, d_model),
             nn.ReLU(),
             nn.Linear(d_model, d_model)
         )
-
+    
     def masked_mean_pool(self, x, mask):
-
         # x    : (B, N, D)
         # mask : (B, N)
-
+        
         mask = mask.unsqueeze(-1)
-
+        
         x = x * mask
-
+        
         summed = x.sum(dim=1)
-
+        
         counts = mask.sum(dim=1).clamp(min=1e-6)
-
+        
         return summed / counts
-
+    
     def forward(self, photons, cond, mask):
-
         # photons : (B, Nphotons, 3)
         # cond    : (B, 3)
         # mask    : (B, Nphotons)
-
+        
         x = self.embedding(photons)
-
+        
         # PyTorch transformer expects:
         # True = ignore token
-
+        
         padding_mask = (mask == 0)
-
+        
         x = self.transformer(
             x,
             src_key_padding_mask=padding_mask
         )
-
+        
         x = self.film(x, cond)
-
+        
         x = self.output_proj(x)
-
+        
         event_embedding = self.masked_mean_pool(x, mask)
-
+        
         return event_embedding
 
 
@@ -182,17 +178,15 @@ class ConditionalFlowModel(nn.Module):
                         )
                 )
             )
-
+        
         transform = CompositeTransform(transforms)
-
+        
         base_distribution = StandardNormal([latent_dim])
-
+        
         self.flow = Flow(transform, base_distribution)
 
     def _create_alternating_mask(self, dim):
-
         mask = torch.arange(dim) % 2
-
         return mask.float()
 
     def encode(self, photons, cond, mask):

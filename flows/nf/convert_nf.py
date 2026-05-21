@@ -8,7 +8,7 @@ Converts prtdirc simulation data into a format suitable for training a NF networ
 import argparse
 import platform
 import time
-import ROOT
+import ROOT #type:ignore
 import numpy as np
 
 program_start = time.time()
