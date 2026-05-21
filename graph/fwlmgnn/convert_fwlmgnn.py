@@ -165,7 +165,7 @@ with open(outfilename.replace('.pkl', '_header.json'), 'w') as f:
 
 if args.save_sparsities:
     import os
-    with open(f'{os.path.dirname(outfilename)}/sparsities-tadj{args.threshold_time_adjacency}-radj{args.threshold_radial_adjacency}.csv', 'w') as f:
+    with open(f'{outfilename}-sparsities-tadj{args.threshold_time_adjacency}-radj{args.threshold_radial_adjacency}.csv', 'w') as f:
         f.write('event,sparsity\n')
         for event in range(len(all_hits)):
             sparsity = 100.0 * (1 - len(all_edges[event]) / (len(all_hits[event]) * (len(all_hits[event]) - 1)))
