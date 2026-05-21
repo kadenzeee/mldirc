@@ -14,8 +14,8 @@
 # Paths
 # -----------------------------
 
-INPUT_DIR=/lustre/nyx/panda/markhoff/dirc/prtdirc/macro/randhitsout5
-OUTPUT_DIR=/lustre/nyx/panda/markhoff/dirc/mldirc/graph/fwlmgnn/data/randhits
+INPUT_DIR=/lustre/nyx/panda/markhoff/dirc/prtdirc/macro/randhitsout-p0.5-3.5-2x-photons
+OUTPUT_DIR=/lustre/nyx/panda/markhoff/dirc/mldirc/graph/fwlmgnn/data/randhits-p0.5-3.5-2x-photons
 SIF=/lustre/nyx/panda/markhoff/containers/root/root_6.30.04-ubuntu22.04.sif
 WORKDIR=/lustre/nyx/panda/markhoff/dirc/mldirc/graph/fwlmgnn
 LOGDIR=$WORKDIR/logs
