@@ -98,7 +98,7 @@ if __name__ == "__main__":
     parser.add_argument('-im', '--model_input', type=str, required=True, help='Path to input model weights; directory should contain model_epoch_*.pt files.')
     parser.add_argument('-id', '--data_input', type=str, required=True, help='Path to input .pkl file to run tests on.')
     parser.add_argument('--save-npz', action='store_true', help='Save predictions and labels to .npz file for further analysis.')
-    parser.add_argument('save-plot', action='store_true', help='Save accuracy vs epoch plot as validation_results.png in model_input directory.')
+    parser.add_argument('--save-plot', action='store_true', help='Save accuracy vs epoch plot as validation_results.png in model_input directory.')
 
     args = parser.parse_args()
     
