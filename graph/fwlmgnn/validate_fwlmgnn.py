@@ -162,4 +162,4 @@ if __name__ == "__main__":
     train_losses = list(train_losses)
     
     if args.save_plot: plot(epochs, accuracies, val_losses, train_losses)
-    if args.save_npz: np.savez(f"{args.model_input}/validation_results.npz", epochs=epochs, accuracies=accuracies, val_losses=val_losses, train_losses=train_losses)
+    if args.save_npz: np.savez(f"{args.model_input}/{os.path.basename(args.model_input)}-validation_results.npz", epochs=epochs, accuracies=accuracies, val_losses=val_losses, train_losses=train_losses)
