@@ -58,6 +58,34 @@ def extract_epoch(filename):
     return int(match.group(1)) if match else -1
 
 
+def plot(epochs, accuracies, val_losses, train_losses):
+    import matplotlib.pyplot as plt
+    import matplotlib as mpl
+    
+    mpl.useTex = True
+    mpl.rc('text', usetex = True, )
+    mpl.rc('font', family = 'serif', size = 14)
+    
+    fig, axs = plt.subplots(1, 2, figsize=(12, 5))
+    axs[0].plot(epochs, accuracies, marker='o')
+    axs[0].set_xlabel('Epoch')
+    axs[0].set_ylabel('Validation Accuracy')
+    axs[0].set_title('Validation Accuracy vs. Epoch')
+    axs[0].grid()
+    
+    axs[1].plot(epochs, val_losses, marker='o', label='Validation Loss')
+    axs[1].plot(epochs, train_losses, marker='o', label='Training Loss')
+    axs[1].set_xlabel('Epoch')
+    axs[1].set_ylabel('Loss')
+    axs[1].set_yscale('log')
+    axs[1].set_title('Loss vs. Epoch')
+    axs[1].legend()
+    axs[1].grid()
+    
+
+    plt.tight_layout()
+    plt.savefig(f"{args.model_input}/validation_results.png")
+    
 
 if __name__ == "__main__":
     
@@ -70,6 +98,7 @@ if __name__ == "__main__":
     parser.add_argument('-im', '--model_input', type=str, required=True, help='Path to input model weights; directory should contain model_epoch_*.pt files.')
     parser.add_argument('-id', '--data_input', type=str, required=True, help='Path to input .pkl file to run tests on.')
     parser.add_argument('--save-npz', action='store_true', help='Save predictions and labels to .npz file for further analysis.')
+    parser.add_argument('save-plot', action='store_true', help='Save accuracy vs epoch plot as validation_results.png in model_input directory.')
 
     args = parser.parse_args()
     
@@ -132,31 +161,5 @@ if __name__ == "__main__":
     val_losses = list(val_losses)
     train_losses = list(train_losses)
     
-    import matplotlib.pyplot as plt
-    import matplotlib as mpl
-    
-    mpl.useTex = True
-    mpl.rc('text', usetex = True, )
-    mpl.rc('font', family = 'serif', size = 14)
-    
-    fig, axs = plt.subplots(1, 2, figsize=(12, 5))
-    axs[0].plot(epochs, accuracies, marker='o')
-    axs[0].set_xlabel('Epoch')
-    axs[0].set_ylabel('Validation Accuracy')
-    axs[0].set_title('Validation Accuracy vs. Epoch')
-    axs[0].grid()
-    
-    axs[1].plot(epochs, val_losses, marker='o', label='Validation Loss')
-    axs[1].plot(epochs, train_losses, marker='o', label='Training Loss')
-    axs[1].set_xlabel('Epoch')
-    axs[1].set_ylabel('Loss')
-    axs[1].set_yscale('log')
-    axs[1].set_title('Loss vs. Epoch')
-    axs[1].legend()
-    axs[1].grid()
-    
-
-    plt.tight_layout()
-    plt.savefig(f"{args.model_input}/validation_results.png")
-    
+    if args.save_plot: plot(epochs, accuracies, val_losses, train_losses)
     if args.save_npz: np.savez(f"{args.model_input}/validation_results.npz", epochs=epochs, accuracies=accuracies, val_losses=val_losses, train_losses=train_losses)
