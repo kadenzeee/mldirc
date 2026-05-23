@@ -39,7 +39,7 @@ entries = f.entries()
 max_photons = args.max_photons
 
 events_x    = np.zeros((entries, max_photons, 3), dtype=np.float32) # photon features: x, y, lead time
-events_c    = np.zeros((entries, 3), dtype=np.float32) # event features: momentum, TOF, TOF_pi
+events_c    = np.zeros((entries, 4), dtype=np.float32) # event features: momentum, TOF, TOF_pi
 events_y    = np.zeros(entries, dtype=np.int32) # event labels
 events_mask = np.zeros((entries, max_photons), dtype=np.bool_) # mask to indicate valid photons
 
@@ -74,7 +74,7 @@ while f.next() and j < entries:
         ]
         
         c = [
-            mag_p, f.event().getTof(), f.event().getTofPi()
+            mag_p, f.event().getTof(), f.event().getTofPi(), len(hits)
         ]
         
         events_x[j, i] = x

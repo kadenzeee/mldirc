@@ -51,7 +51,6 @@ class FiLM(nn.Module):
 # ============================================================
 
 class PhotonTransformer(nn.Module):
-
     def __init__(
         self,
         photon_dim=3,
@@ -135,7 +134,6 @@ class PhotonTransformer(nn.Module):
 # ============================================================
 
 class ConditionalFlowModel(nn.Module):
-
     def __init__(
         self,
         photon_dim=3,
@@ -144,27 +142,26 @@ class ConditionalFlowModel(nn.Module):
         latent_dim=128,
         num_flow_steps=6
     ):
-
+    
         super().__init__()
-
+        
         self.encoder = PhotonTransformer(
             photon_dim=photon_dim,
             cond_dim=cond_dim,
             d_model=latent_dim
         )
-
+        
         transforms = []
-
+        
         for _ in range(num_flow_steps):
-
             transforms.append(
                 ReversePermutation(features=latent_dim)
             )
-
+            
             transforms.append(
                 ActNorm(features=latent_dim)
             )
-
+            
             transforms.append(
                 AffineCouplingTransform(
                     mask=self._create_alternating_mask(latent_dim),
@@ -227,9 +224,8 @@ from torch.utils.data import Dataset
 
 
 class DIRCDataset(Dataset):
-
     def __init__(self, folder):
-
+        
         self.files = sorted([
             os.path.join(folder, f)
             for f in os.listdir(folder)
@@ -244,36 +240,35 @@ class DIRCDataset(Dataset):
         data_bar = tqdm.tqdm(enumerate(self.files), total=len(self.files), desc='Building dataset')
         
         for file_id, file in data_bar:
-
+            
             data = np.load(file)
-
+            
             x_list.append(data["x"])
             c_list.append(data["c"])
             mask_list.append(data["mask"])
             y_list.append(data["y"])
-
+        
         self.x = torch.from_numpy(
             np.concatenate(x_list, axis=0)
         ).float()
-
+        
         self.c = torch.from_numpy(
             np.concatenate(c_list, axis=0)
         ).float()
-
+        
         self.mask = torch.from_numpy(
             np.concatenate(mask_list, axis=0)
         ).float()
-
+        
         self.y = torch.from_numpy(
             np.concatenate(y_list, axis=0)
         ).long()
 
     def __len__(self):
-
         return len(self.x)
 
     def __getitem__(self, idx):
-
+    
         return {
             "photons": self.x[idx],
             "cond": self.c[idx],
@@ -354,16 +349,16 @@ if __name__ == "__main__":
         
         checkpoint = {
             "epoch": epoch,
-
+            
             "model_state_dict":
                 model.state_dict(),
-
+            
             "optimizer_state_dict":
                 optimizer.state_dict(),
-
+            
             "config":
                 vars(args),
-
+            
             "loss":
                 loss.item()
         }
