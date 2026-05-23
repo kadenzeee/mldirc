@@ -69,6 +69,7 @@ if __name__ == "__main__":
     
     parser.add_argument('-im', '--model_input', type=str, required=True, help='Path to input model weights; directory should contain model_epoch_*.pt files.')
     parser.add_argument('-id', '--data_input', type=str, required=True, help='Path to input .pkl file to run tests on.')
+    parser.add_argument('--save-npz', action='store_true', help='Save predictions and labels to .npz file for further analysis.')
 
     args = parser.parse_args()
     
@@ -157,4 +158,5 @@ if __name__ == "__main__":
 
     plt.tight_layout()
     plt.savefig(f"{args.model_input}/validation_results.png")
-    plt.show()
+    
+    if args.save_npz: np.savez(f"{args.model_input}/validation_results.npz", epochs=epochs, accuracies=accuracies, val_losses=val_losses, train_losses=train_losses)
