@@ -97,18 +97,18 @@ def plot_sep_theta(preds, labels, dataset, save=False):
     import pandas as pd 
     
     # compare to dense nets and time imaging results from perf_vs_ti.ipynb
-    with open('data/perf_vs_ti.csv', 'r') as f:
-        df = pd.read_csv(f)
-    ti_x = df['theta_bin_center']
-    ti_y = df['ti_sep']
-    ti_yerr = df['ti_err']
-    film_acc_x = df['theta_bin_center'][:len(df['film_sep'])]
-    film_acc_y = df['film_sep'][:len(df['film_sep'])]
-    film_acc_yerr = df['film_err'][:len(df['film_sep'])]
-
+    #with open('data/perf_vs_ti.csv', 'r') as f:
+    #    df = pd.read_csv(f)
+    #ti_x = df['theta_bin_center']
+    #ti_y = df['ti_sep']
+    #ti_yerr = df['ti_err']
+    #film_acc_x = df['theta_bin_center'][:len(df['film_sep'])]
+    #film_acc_y = df['film_sep'][:len(df['film_sep'])]
+    #film_acc_yerr = df['film_err'][:len(df['film_sep'])]
+    #
+    #plt.plot(film_acc_x, film_acc_y, marker='o', label='FwLM NN', color='orange')
+    #plt.errorbar(ti_x, ti_y, yerr=ti_yerr, fmt='o', label='Time Imaging', color='green')
     plt.plot(theta_bins[:-1] + 2.5, sep_powers, marker='o', label='GNN')
-    plt.plot(film_acc_x, film_acc_y, marker='o', label='FwLM NN', color='orange')
-    plt.errorbar(ti_x, ti_y, yerr=ti_yerr, fmt='o', label='Time Imaging', color='green')
     plt.xlabel(r'Polar Angle, $\theta$ (°)')
     plt.ylabel(r'Separation Power, $\sigma$')
     
