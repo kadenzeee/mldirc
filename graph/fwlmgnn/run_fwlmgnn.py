@@ -6,6 +6,7 @@ Imports a trained GNN model and evaluates it on a given test dataset, printing t
 
 
 import torch
+import numpy as np
 from torch_geometric.loader import DataLoader
 from panda_fwlmgnn import PandaGNN
 import os
@@ -44,7 +45,7 @@ def evaluate(model, dataset, batch_size=1024):
     
     return accuracy, all_preds, all_labels
 
-def plot_confusion_matrix(preds, labels):
+def plot_confusion_matrix(preds, labels, save=False):
     from sklearn.metrics import confusion_matrix
     import seaborn as sns
     import matplotlib.pyplot as plt
@@ -62,10 +63,11 @@ def plot_confusion_matrix(preds, labels):
     plt.xticks([0.5, 1.5], [r'$\pi$+', r'$K$+'])
     plt.yticks([0.5, 1.5], [r'$\pi$+', r'$K$+'])
     plt.title('Confusion Matrix')
-    plt.savefig(f"{os.path.dirname(args.model_input)}/confusion_matrix.png")
-    plt.show()
+    if save: np.savez(f"{os.path.dirname(args.model_input)}/cm_data.npz", cm=cm)
+    if save: plt.savefig(f"{os.path.dirname(args.model_input)}/confusion_matrix.png")
+    if not save: plt.show()
 
-def plot_sep_theta(preds, labels, dataset):
+def plot_sep_theta(preds, labels, dataset, save=False):
     import matplotlib.pyplot as plt
     import matplotlib as mpl
     from accsep import acc_to_sep
@@ -118,10 +120,11 @@ def plot_sep_theta(preds, labels, dataset):
     plt.xlim(20, 145)
     plt.title(r'Model Accuracy vs. $\theta$')
     plt.grid()
-    plt.savefig(f"{os.path.dirname(args.model_input)}/accuracy_vs_theta.png")
-    plt.show()
+    if save: np.savez(f"{os.path.dirname(args.model_input)}/sep_vs_theta_data.npz", theta_bins=theta_bins, sep_powers=sep_powers)
+    if save: plt.savefig(f"{os.path.dirname(args.model_input)}/accuracy_vs_theta.png")
+    if not save: plt.show()
 
-def plot_sep_mom(preds, labels, dataset):
+def plot_sep_mom(preds, labels, dataset, save=False):
     
     import matplotlib.pyplot as plt
     import matplotlib as mpl
@@ -156,8 +159,9 @@ def plot_sep_mom(preds, labels, dataset):
     
     plt.title(r'Model Accuracy vs. Momentum')
     plt.grid()
-    plt.savefig(f"{os.path.dirname(args.model_input)}/accuracy_vs_momentum.png")
-    plt.show()
+    if save: np.savez(f"{os.path.dirname(args.model_input)}/sep_vs_momentum_data.npz", mom_bins=mom_bins, sep_powers=sep_powers)
+    if save: plt.savefig(f"{os.path.dirname(args.model_input)}/accuracy_vs_momentum.png")
+    if not save: plt.show()
 
 
 if __name__ == "__main__":
@@ -173,30 +177,31 @@ if __name__ == "__main__":
     parser.add_argument('--plot-cm', action='store_true', help='Plot confusion matrix after evaluation.')
     parser.add_argument('--plot-sep-theta', action='store_true', help='Plot model accuracy vs. theta after evaluation.')
     parser.add_argument('--plot-sep-mom', action='store_true', help='Plot model accuracy vs. momentum after evaluation.')
-
+    parser.add_argument('--save', action='store_true', help='Save predictions and labels to .npz file for further analysis.')
+    
     args = parser.parse_args()
     
     # ----- Load ----- #
     
     import pickle
     from torch_geometric.data import Data
-
+    
     with open(args.data_input, "rb") as f:
         data = pickle.load(f)
-
+    
     nevents = len(data['labels'])
-
+    
     dataset = []
-
+    
     for i in range(nevents):
-
+        
         x           = torch.tensor(data['nodes'][i], dtype=torch.float)
         edge_index  = torch.tensor(data['edges'][i].T, dtype=torch.long)
         edge_attr   = torch.tensor(data['edge_features'][i], dtype=torch.float)
-
+        
         y   = torch.tensor([data['labels'][i]], dtype=torch.long)
         g   = torch.tensor(data['globals'][i], dtype=torch.float) 
-
+        
         graph = Data(x=x, edge_index=edge_index, edge_attr=edge_attr, y=y)
         graph.global_features = g
         
@@ -211,6 +216,7 @@ if __name__ == "__main__":
     
     accuracy, all_preds, all_labels = evaluate(model, dataset)
     
-    if args.plot_cm: plot_confusion_matrix(all_preds, all_labels)
-    if args.plot_sep_theta: plot_sep_theta(all_preds, all_labels, dataset)
-    if args.plot_sep_mom: plot_sep_mom(all_preds, all_labels, dataset)
+    if args.plot_cm: plot_confusion_matrix(all_preds, all_labels, save=args.save)
+    if args.plot_sep_theta: plot_sep_theta(all_preds, all_labels, dataset, save=args.save)
+    if args.plot_sep_mom: plot_sep_mom(all_preds, all_labels, dataset, save=args.save)
+    
