@@ -63,8 +63,8 @@ def plot_confusion_matrix(preds, labels, save=False):
     plt.xticks([0.5, 1.5], [r'$\pi$+', r'$K$+'])
     plt.yticks([0.5, 1.5], [r'$\pi$+', r'$K$+'])
     plt.title('Confusion Matrix')
-    if save: np.savez(f"{os.path.dirname(args.model_input)}/{os.path.dirname(args.model_input)}-cm_data.npz", cm=cm)
-    if save: plt.savefig(f"{os.path.dirname(args.model_input)}/{os.path.dirname(args.model_input)}-confusion_matrix.png")
+    if save: np.savez(f"{os.path.dirname(args.model_input)}/{os.path.basename(os.path.dirname(args.model_input))}-cm_data.npz", cm=cm)
+    if save: plt.savefig(f"{os.path.dirname(args.model_input)}/{os.path.basename(os.path.dirname(args.model_input))}-confusion_matrix.png")
     if not save: plt.show()
 
 def plot_sep_theta(preds, labels, dataset, save=False):
@@ -120,8 +120,8 @@ def plot_sep_theta(preds, labels, dataset, save=False):
     plt.xlim(20, 145)
     plt.title(r'Model Accuracy vs. $\theta$')
     plt.grid()
-    if save: np.savez(f"{os.path.dirname(args.model_input)}/{os.path.dirname(args.model_input)}-sep_vs_theta_data.npz", theta_bins=theta_bins, sep_powers=sep_powers)
-    if save: plt.savefig(f"{os.path.dirname(args.model_input)}/{os.path.dirname(args.model_input)}-accuracy_vs_theta.png")
+    if save: np.savez(f"{os.path.dirname(args.model_input)}/{os.path.basename(os.path.dirname(args.model_input))}-sep_vs_theta_data.npz", theta_bins=theta_bins, sep_powers=sep_powers)
+    if save: plt.savefig(f"{os.path.dirname(args.model_input)}/{os.path.basename(os.path.dirname(args.model_input))}-accuracy_vs_theta.png")
     if not save: plt.show()
 
 def plot_sep_mom(preds, labels, dataset, save=False):
@@ -159,8 +159,8 @@ def plot_sep_mom(preds, labels, dataset, save=False):
     
     plt.title(r'Model Accuracy vs. Momentum')
     plt.grid()
-    if save: np.savez(f"{os.path.dirname(args.model_input)}/{os.path.dirname(args.model_input)}-sep_vs_momentum_data.npz", mom_bins=mom_bins, sep_powers=sep_powers)
-    if save: plt.savefig(f"{os.path.dirname(args.model_input)}/{os.path.dirname(args.model_input)}-accuracy_vs_momentum.png")
+    if save: np.savez(f"{os.path.dirname(args.model_input)}/{os.path.basename(os.path.dirname(args.model_input))}-sep_vs_momentum_data.npz", mom_bins=mom_bins, sep_powers=sep_powers)
+    if save: plt.savefig(f"{os.path.dirname(args.model_input)}/{os.path.basename(os.path.dirname(args.model_input))}-accuracy_vs_momentum.png")
     if not save: plt.show()
 
 
