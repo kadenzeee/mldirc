@@ -54,7 +54,7 @@ class PhotonTransformer(nn.Module):
     def __init__(
         self,
         photon_dim=3,
-        cond_dim=3,
+        cond_dim=4,
         d_model=128,
         nhead=8,
         num_layers=4,
@@ -137,7 +137,7 @@ class ConditionalFlowModel(nn.Module):
     def __init__(
         self,
         photon_dim=3,
-        cond_dim=3,
+        cond_dim=4,
         max_photons=64,
         latent_dim=128,
         num_flow_steps=6
