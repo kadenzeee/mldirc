@@ -314,6 +314,9 @@ if __name__ == "__main__":
         lr=1e-4
     )
     
+    print(f'[INFO] Starting training on device: {device}')
+    model.train()
+    
     for epoch in range(args.epochs):
         
         pbar = tqdm.tqdm(loader, desc=f'Epoch {epoch}')
