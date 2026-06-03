@@ -300,8 +300,8 @@ if __name__ == "__main__":
     
     loader = torch.utils.data.DataLoader(
         dataset,
-        batch_size=64,
-        shuffle=True,
+        batch_size=args.batch_size,
+        shuffle=False,
         num_workers=4,
         pin_memory=True
     )
