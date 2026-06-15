@@ -5,6 +5,8 @@ import os
 import torch
 import torch.nn as nn
 
+import tqdm
+
 from nflows.flows import Flow
 from nflows.distributions.normal import StandardNormal
 from nflows.transforms.base import CompositeTransform
@@ -224,13 +226,26 @@ from torch.utils.data import Dataset
 
 
 class DIRCDataset(Dataset):
-    def __init__(self, folder):
+    def __init__(self, path):
         
-        self.files = sorted([
-            os.path.join(folder, f)
-            for f in os.listdir(folder)
-            if f.endswith(".npz")
-        ])
+        if isinstance(path, (list, tuple)):
+            self.files = sorted(path)
+        
+        elif os.path.isdir(path):
+            self.files = sorted([
+                os.path.join(path, f)
+                for f in os.listdir(path)
+                if f.endswith(".npz")
+            ])
+        
+        elif os.path.isfile(path):
+            self.files = [path]
+            
+        else:
+            raise ValueError(f"Could not find dataset at path: {path}")
+        
+        if len(self.files) == 0:
+            raise ValueError(f"Could not find any .npz files at path: {path}")
         
         x_list = []
         c_list = []
@@ -280,7 +295,7 @@ class DIRCDataset(Dataset):
 
 if __name__ == "__main__":
     
-    import argparse, tqdm, time, subprocess
+    import argparse, time, subprocess
     
     parser = argparse.ArgumentParser(prog='convert_nf', description='Converts PrtTools ROOT files to NumPy arrays for NF training.')
     
