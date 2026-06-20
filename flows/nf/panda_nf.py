@@ -183,35 +183,35 @@ class ConditionalFlowModel(nn.Module):
         base_distribution = StandardNormal([latent_dim])
         
         self.flow = Flow(transform, base_distribution)
-
+        
     def _create_alternating_mask(self, dim):
         mask = torch.arange(dim) % 2
         return mask.float()
-
+    
     def encode(self, photons, cond, mask):
-
+        
         return self.encoder(
             photons,
             cond,
             mask
         )
-
+        
     def log_prob(self, photons, cond, mask):
-
+        
         z = self.encode(
             photons,
             cond,
             mask
         )
-
+        
         return self.flow.log_prob(z)
-
+    
     def sample(self, n_samples):
-
+        
         return self.flow.sample(n_samples)
-
+    
     def forward(self, photons, cond, mask):
-
+        
         return self.log_prob(
             photons,
             cond,
@@ -278,10 +278,10 @@ class DIRCDataset(Dataset):
         self.y = torch.from_numpy(
             np.concatenate(y_list, axis=0)
         ).long()
-
+    
     def __len__(self):
         return len(self.x)
-
+    
     def __getitem__(self, idx):
     
         return {
@@ -336,6 +336,9 @@ if __name__ == "__main__":
         
         pbar = tqdm.tqdm(loader, desc=f'Epoch {epoch}')
         
+        load_total = 0
+        compute_total = 0
+        
         for batch in pbar:
             
             t1 = time.time()
@@ -343,6 +346,9 @@ if __name__ == "__main__":
             photons = batch["photons"].to(device)
             cond    = batch["cond"].to(device)
             mask    = batch["mask"].to(device)
+            
+            t2 = time.time()
+            t3 = time.time()
             
             optimizer.zero_grad()
             
@@ -358,11 +364,17 @@ if __name__ == "__main__":
             
             optimizer.step()
             
-            t2 = time.time()
+            t4 = time.time()
+            
+            load_total += t2 - t1
+            compute_total += t4 - t3
             
             pbar.set_postfix({
                 'loss': f"{loss.item():.4f}",
-                'compute': f"{(t2 - t1):.2f}s"
+                'load': f"{(t2 - t1):.4f}s",
+                'compute': f"{(t4 - t3):.2f}s",
+                'load_total': f"{load_total:.4f}s",
+                'compute_total': f"{compute_total:.2f}s"
             })
         
         checkpoint = {
